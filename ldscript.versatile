@@ -1,0 +1,53 @@
+ENTRY(_entry)
+SECTIONS
+{
+  . = 0x10000; 
+  _load = .;
+  . = 0x10000; 
+  _start = .;
+  .text : {
+   	_text_start = .;    
+   	KEEP(*(.startup))
+    *(.text)
+    . = ALIGN(4); 
+    _text_end = .;    
+  } 
+ .data : { *(.data) }
+ .bss : {
+   . = ALIGN(4); 
+   _bss_start = .;
+   bss = .;
+   *(.bss COMMON)
+   . = ALIGN(4); 
+   _bss_end = .;
+ } 
+ /*
+  * Stacks for the diverse ARM modes (SYS,IRQ,FIQ,SVC,ABT,UND)
+  * Remember that stacks grow downward
+  * so the top of a stack is after the reserved space.
+  */
+  
+ /* SYS Stack, which is the C stack. */
+ . = ALIGN(8);
+ . = . + 0x1000; /* 4kB of stack memory */
+ _sys_stack_top = .;
+ 
+ /* IRQ Stack. */
+ . = ALIGN(8);
+ . = . + 0x100; /* 256 bytes of stack memory */
+ _irq_stack_top = .;
+ 
+ /* Misc stack, used for FIQ,SVC,ABT, and UND */
+ . = ALIGN(8);
+ . = . + 0x100; /* 256 bytes of stack memory */
+ _fiq_stack_top = .;
+ _svc_stack_top = .;
+ _abt_stack_top = .;
+ _und_stack_top = .;
+ 
+  . = ALIGN(0x1000);
+ _kheap_low = .;
+ . = . + 1M; /* Heap size for the malloc */
+ _kheap_high = .;
+ 
+}

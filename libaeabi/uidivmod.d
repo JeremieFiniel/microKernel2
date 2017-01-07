@@ -1,0 +1,1 @@
+uidivmod.o: uidivmod.S

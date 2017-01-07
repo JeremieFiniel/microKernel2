@@ -1,0 +1,134 @@
+
+This project is about building a small and simple kernel, on two different ARM boards:
+
+	- Versatile Platform Board (versatilepb).	
+	- Versatile Express-A9 board (vexpress-a9).
+
+The two boards are emulated by QEMU reasonably well. 
+
+The VersatilePB board is older, based on an older ARM processor (arm926ej-s)
+which is an ARMv5. There are plenty of manuals available on the Web for that board
+and the ARM926EJ-S processor.
+
+The VExpress-A9 board is more recent, with a more recent multi-core ARM processor,
+the Cortex-A9 processor, which is an ARMv7. There are plenty of manuals available on 
+the Web for that board and for the Cortex-A9 processor.
+
+======================================================================================
+Code Browsing / Discovery
+======================================================================================
+
+You are free to browse and discover the given source code however you please. 
+Yet, we felt that a little guided tour might help you get started.
+
+A board is essentially composed of a processor and devices. Some devices
+are always there, such as memory, an interrupt controller, and most often
+an UART. The processor usually embeds a timer and may embed a cache. 
+Sometimes, the processor may also support an MMU.
+
+This means that some of the code is platform specific, other parts of the code 
+is platform independent. For clarity, we have prefixed the platform-independent
+code with "k", such as kmain.c or kmem.c. This is a coarse classification, 
+to be helpful, it may be the case that there are still platform-specific or
+processor-specific code in k-files. 
+
+Everything starts in the startup.s file, at the entry point _entry.
+Look at the linker script of the platform you are testing/reading about 
+in order to see how the code and various data regions are layed out in memory.
+
+You have two supported platforms: VersatilePB and VExpress-A9. Choose the 
+platform you want to try out in the Makefile and rebuild everything.
+
+Notice that there is platform-specific initialization, look at _arm_irq_init,
+which is different since the VersatilePB has a PL190 and the VExpress-A9 has
+a GIC. This is generally the case that early initialization is board-specific
+and sometimes SoC specific.
+
+After the hardware setup in assembly language, the execution continues in C,
+starting in the kmain(void) function. 
+
+The given code runs on QEMU, a type-II hypervisor, which can emulate the two
+target platforms: VersatilePB and VExpress-A9. Once you have chosen a platform
+in the makefile and rebuilt everything, you can execute the code on QEMU, simply
+issue the command:
+
+	$ make run
+
+You can see how the emulation of the code is launched on QEMU.
+There is a README-QEMU in the documentation. 
+
+======================================================================================
+MAKEFILE:
+======================================================================================
+
+So you must understand that building an embedded software is pretty much
+tailored to the target board. This project is capable of targeting two
+boards: the VersatilePB and the VExpress-A9. First, look at the makefile
+and the linker scripts (often called ldscripts).
+
+Ultimately, you must read and understand the makefile completely, but
+initially, you can look pretty much at the top of the makefile, where
+you can setup the overall configuration for one of the board or the other.
+
+	# Choose your emulated board
+	BOARD_VERSATILEPB=n
+	BOARD_VEXPRESS=y
+
+This shows you how to select (y) the VExpress-A9 board.
+
+Notice the two other options:
+
+	CONFIG_LOCAL_ECHO=y
+	CONFIG_POLLING=y
+
+Go look in kmain.c to see what they are about in the code.
+
+Notice the two other options:
+	
+	CONFIG_SPACE_STATS=y
+	CONFIG_TEST_MALLOC=y
+
+Go look in mem.c to see what they are about in the code.
+
+======================================================================================
+TOOLCHAIN
+======================================================================================
+
+Before you can compile any software, you must select a toolchain, 
+that is, a chain of tools to compile and link your source code into
+a binary representation that can be loaded and executed on the board
+you chose (in this case, the board you chose emulated by QEMU).
+Most likely, you are running on an Intel processor (x86 or x86_64),
+but the boards we target are based on an ARM processor. So you need
+to download/install a toolchain for the ARM processor, which will
+include the GNU gcc compiler, the GNU linker, and the GNU debugger (gdb).
+We will also need the objcopy tool to produce a pure binary from an 
+elf executable.
+
+There are many ARM toolchains out there, I chose the gcc-arm-none-eabi,
+which is suited for our purpose here. It is for the ARM processor. 
+It assumes no specific operating system (none) and it follows the
+eabi calling convention.
+
+======================================================================================
+EAABI Library
+======================================================================================
+
+Our choice of a toolchain (GNU GCC for arm, none, eabi) leads 
+to discussing the given eaabi library, which is open-source.
+
+On ARM, there are many facets of the C language that are not generated 
+in-line by the GNU GCC compiler, but rather provided through a library.
+A typical case is the integer division and modulo, two functions that 
+our code uses (see the kprintf function, when printing a number digit by 
+digit). 
+
+The entire library has been provided for your convenience, if you would need other functions. 
+However, the makefile selective includes just a few functions.
+
+======================================================================================
+Happy coding.
+Have fun.
+
+
+

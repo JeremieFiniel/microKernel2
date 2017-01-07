@@ -1,0 +1,189 @@
+
+This is your to-do list for this project.
+
+You will surrender your progress every week, before Sunday, midnight.
+The final version will be surrendered Sunday 8th, January, 2017.
+
+You will code alone but work collectively. In other words, each one of you 
+will submit its own project. You may however work collectively, exchanging
+ideas, explanations, or even code (see below). 
+
+=============================================================================
+--- VERY IMPORTANT --- VERY IMPORTANT  --- VERY IMPORTANT --- VERY IMPORTANT
+  
+You are permitted to leverage the web as much as you can.  
+There are a lot of examples and code snippets out there. 
+
+The code that you submit may or may not be entirely your own, but you must 
+reference its source if it is not entirely yours. The given reference must 
+permit to access the original work, such as a URL. 
+
+In other words, you can cut and paste code that you find from the Internet,
+from Web sites such as StackOverflow or OSDev. But plagiarism will not be 
+tolerated, you must acknowledge where the code comes from. 
+
+If the code you submit is a derivative work from a code from someone else,
+the original code must have a GPL or LGPL license. Any code that you submit
+that is your own will be considered under a GPL license. 
+
+However, even though you may cut and paste code that is not yours, you must
+understand that code. Understand that by including code in your project, 
+you are not stating it is yours, you are stating that you understand 
+the code and its underlying techniques.  
+
+Nota Bene: 
+    A code without meaningful comments will be considered as a code that 
+    you do not understand.
+
+Nota Bene: 
+    You must understand that you may be questioned on the code you submitted, 
+    up to the day of the jury that will validate your grade in the AAOS UE.
+    
+    If you were questioned, the intent would never be to get you or fail you,
+    the intent would be to verify that you did your best to understand the code.
+    Have no doubt, a quick surface understanding following a mindless cut-and-paste
+    will be easily spotted. Conversely, a true attempt to understand and integrate
+    a code will also be spotted easily. 
+    
+    To put it simply, if you do an honest work, you have nothing to be afraid of,
+    even if you still have bugs or if you have misunderstood something. 
+
+=============================================================================
+
+(1) First Step - Surrender December 11th, 2016
+    This step only concerns the VExpress-A9 board.
+
+	- Basic event-oriented scheduler, as seen in the lectures.
+ 	  with top/bottom support, hook on interrupts.
+
+	- UART working on interrupts through top/bottom.
+
+    - Timer is working on interrupts with top/bottom.
+    - The ability to post delayed events (will execute only after a given delay),
+      use the timer to wake up from sleeping to execute the next delayed event.
+
+    - Turn on the MMU and L1 cache, with a setup an initial page table, 
+      two levels, with 1:1 mapping.
+      	
+(2) Second Step - Surrender December 18th, 2016
+    This step only concerns the VExpress-A9 board.
+
+    - Create different processes, that is, different page tables, with different mappings.
+    - Each process has one thread, with its own C stack, à la Linux/POSIX
+    
+(3) Third Step - Surrender January 8th, 2017 	 
+    This step only concerns the VExpress-A9 board.
+
+    - Round-robin scheduling of processes, based on a quantum. 
+    - Simple kernel console, to list processes, create them, kill them,
+      and select the current process the console goes to.
+
+======================================================================================
+First Step - Surrender December 11th, 2016
+======================================================================================
+
+This first step only concerns the VExpress-A9 board.
+
+The scheduler manages a linked list of posted events to execute when possible.
+
+Events are malloc'ed structures, with a function pointer for the reaction, like
+we have discussed in our lectures.
+
+The top/bottom framework is to implement on top of the irq supported already given to you.
+Tops are executed directly by upcalling them from the irq_handler in C. Tops may request
+bottoms if they need them. 
+
+We do not ask that you support different priorities for different IRQs. This means 
+that a single top handler may execute at any one time, keep interrupts disabled when processing
+a top handler.
+
+Be careful, a top can do very little, it can happen at any time, so it has access 
+to none of the normal services. For instance, a top cannot use malloc, which means,
+bottom events cannot be allocated by tops themselves.
+
+Turn on the MMU, with L1 cache, with a setup an initial page table, two levels, with 1:1 mapping.
+    
+Look at the gic.s file to see how we turned off the MMU with a bic instruction on
+the processor control register p15. You can turn it on with an orr instruction.
+      
+A 1:1 mapping means that a virtual page is mapped to the physical page with the same
+address. For instance, the virtual address 0x0000-0000 would map to 0x0000-0000
+and the virtual address 0x0001-0000 would map to 0x0001-0000. This is an identity mapping.  
+      
+Do not forget to flush your TLB and your caches, code and data.
+The code to do this can be found on the Internet.
+
+======================================================================================
+Second Step - Surrender December 18th, 2016
+======================================================================================
+
+This second step only concerns the VExpress-A9 board.
+
+This second step requires to go in the Technical Reference Manuals of the VExpress-A9
+to find about the details of the MMU setup. 
+      
+    - Create different processes, that is, different page tables, with different mappings.
+       
+      Allocate the physical pages to back virtual pages from a pool of pages, in physical memory, 
+      typically between a bottom page and a top page. Nothing fancy here, use linked list of pages. 
+      You have similar code in the kmem.c file I gave you.
+
+      Make sure here that your kernel is mapped in all your page tables, at the same address,
+      with a 1:1 mapping. Protect these pages in kernel mode, so that you can read or write 
+      these pages only in kernel mode. This means protecting pages between _start and _end,
+      see these symbols in the ldscript.vexpress file.
+      
+      Remember to leave the SYS/USR stack as not kernel protected pages. 
+      But this means that you need to have a user stack of your own to run your user thread.
+      That user stack will be private to each process, whereas the SYS/USR stack is shared
+      across all processes, usable both in privileged and non-privileged modes.
+      
+      Remember that you must provide a user malloc/free, that is not the kmalloc/kree
+      and that is not shared across processes. 
+      
+      Look in the VExpress-A9 ldscript to see how we gathered the sections from the user code,
+      currently concentrated within the user.c file. There is minimal support there for 
+      syscalls. Add code in the user.c file to execute different "applications" based on 
+      the pid.
+                  
+      We do not ask that you support ELF loading. The user code is linked in, along with the kernel
+      code, but the ldscript is separating them in different pages.
+      The user code can be shared across processes. 
+
+	  At first, we do not ask that you support page faults. 
+	  You may allocate all the pages of a process at creation time, 
+	  from the pool of physical pages. 
+	  You must therefore think small when creating a process,
+      it should only have a small number of pages that are private to that process.
+         
+      Tests:
+	    0) Each process has one thread, with its own C stack, à la Linux/POSIX.
+      	1) Explicit context switch from one process to another should work.
+           You are given the mechanic of syscalls.
+           You have the exit syscal.
+      	   You must implement the sleep syscall, which will context switch to another process.
+        2) You must notice that each process has a different address space, for its
+           stack and its malloc/free heap.
+    
+
+======================================================================================
+Third Step - Surrender January 8th, 2017 	 
+======================================================================================
+
+This step only concerns the VExpress-A9 board.
+
+    - Round-robin scheduling of processes, based on a quantum.
+      You will leverage your timer support. 
+    
+    - Implement the necessary syscalls 
+      You must implement the read syscall, that will work only on "stdin"
+      You must implement the write syscall, that will work only on "stdout"
+      	
+    - Simple kernel console, to list processes, create them, kill them,
+      and select the current process the console goes to.
+      This is very similar to the Qemu console, with an escape sequence to get back the control,
+      so that you can switch the console to another process.
+      
+You must be able to create different processes and interact with them from the console.
+
+      

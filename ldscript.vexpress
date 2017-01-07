@@ -1,0 +1,118 @@
+ENTRY(_entry)
+SECTIONS
+{
+  /*
+   * Gather first the user-mode sections, from user-mode object files,
+   * Initially, we have only one user-mode object file: build/user.o.
+   * We must grab the different sections: 
+   *   text, data, bss, rodata 
+   * We set them up in a particular region of memory, that we will be able
+   * to map in user-mode pages, once we have a MMU setup.
+   * The other pages, from _start to _end will be kernel protected.
+   
+   * Notice that the SYS stack will not be kernel protected, since
+   * the SYS/USR stacks are the same from the ARM processor perspective.
+   * 
+   * You will also have to add a user heap, with pages that are not kernel 
+   * protected and that are not shared across processes.
+   */
+  . = 0x60300000; 
+ .utext : {
+    _utext_start = .;    
+	build/user.o(.text)
+    _utext_end = .;    
+ }
+ . = ALIGN(0x1000); /*Align to use different small pages*/
+ .udata : {
+    _udata_start = .;    
+	build/user.o(.data)
+    _udata_end = .;    
+ }
+ .ubss : {
+    _ubss_start = .;    
+	build/user.o(.bss)
+    _ubss_end = .;    
+ }
+ .urodata : {
+    _urodata_start = .;    
+	build/user.o(.rodata)
+    _urodata_end = .;    
+ }
+ /* 
+  * SYS/USR stack, a unique stack for the SYS and USR modes.
+  * This stack supports the C stack. 
+  */
+ . = ALIGN(8);
+ . = . + 0x1000; /* 4kB of stack memory */
+ _sys_stack_top = .;
+ . = . + 0x1000;
+
+ . = ALIGN(0x4000);
+ _usr_space_low = .;
+ . = . + 0x1000000;
+ _usr_space_high = .;
+ 
+ /*
+  * Now the kernel stuff, loaded and linked at the same address.
+  * With an MMU, these pages, from _start to _end should be kernel protected.
+  */
+  . = 0x60010000; 
+  _load = .;
+  . = 0x60010000; 
+  _start = .;
+  .text : {
+   	_text_start = .;    
+   	KEEP(*(.startup))
+    *(.text)
+    . = ALIGN(4); 
+    _text_end = .;    
+  } 
+ .data : { *(.data) }
+ .bss : {
+   . = ALIGN(4); 
+   _bss_start = .;
+   bss = .;
+   *(.bss COMMON)
+   . = ALIGN(4); 
+   _bss_end = .;
+ } 
+
+ /*
+  * Stacks for the diverse ARM exception modes (IRQ,FIQ,SVC,ABT,UND)
+  * Remember that stacks grow downward
+  * so the top of a stack is after the reserved space.
+  */
+  
+ /* IRQ Stack. */
+ . = ALIGN(8);
+ . = . + 0x100; /* 256 bytes of stack memory */
+ _irq_stack_top = .;
+
+ /* SVC Stack. */
+ . = ALIGN(8);
+ . = . + 0x100; /* 256 bytes of stack memory */
+ _svc_stack_top = .;
+ 
+ /* Misc stack, used for FIQ,SVC,ABT, and UND */
+ . = ALIGN(8);
+ . = . + 0x100; /* 256 bytes of stack memory */
+ _fiq_stack_top = .;
+ _abt_stack_top = .;
+ _und_stack_top = .;
+
+  /*
+   * Reserve some space for a kernel heap, supporting 
+   * the kernel malloc/free.
+   */
+ . = ALIGN(0x1000);
+ _kheap_low = .;
+ . = . + 1M; /* Heap size for the malloc */
+ _kheap_high = .;
+
+ . = ALIGN(0x4000);
+ _ptp_low = .;
+ . = . + 1M;
+ _ptp_high = .;
+  _end = .;
+ 
+}
