@@ -7,6 +7,7 @@
 
 extern void umain(uint32_t pid);
 extern uintptr_t _sys_stack_top;
+extern void _arm_sleep(void);
 unsigned int lastPID = 0;
 
 void scheduling_init()
