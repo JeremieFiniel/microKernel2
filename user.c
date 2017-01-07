@@ -97,6 +97,17 @@ void main(uint32_t pid) {
 
 void umain(uint32_t pid, uint32_t sp) {
 	kprintf("--> launching user pid=%d...\n",pid);
-	_arm_usr_mode(pid, main, sp);
+	//_arm_usr_mode(pid, main, sp);
+	/* Switch from SYS_MODE to USR_MODE */
+	__asm__ __volatile__(
+			"mrs r0, cpsr\n"
+			"bic r0,r0, #0x1f\n" //(CPSR_SYS_MODE | CPSR_IRQ_FLAG)
+			"orr r0,r0, #0x50\n" //(CPSR_USR_MODE | CPSR_FIQ_FLAG)
+			"msr cpsr,r0\n"
+
+			"mov sp, %0\n"
+			"mov pc, %1\n"
+			::"r" (sp), "r" (main): "memory"
+			);
 	kprintf("--> user pid=%d exited, errcode=%d \n",pid, errcode);
 }
