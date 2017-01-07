@@ -185,7 +185,7 @@ _secondary:
 	.word _reset_loop
 	.word _undef_loop
 	.word _swi_handler  /* _softirq_loop */
-	.word _prefetch_loop
+	.word _arm_prefetch_abort
 	.word _arm_data_abort
 	.word _reserved_loop
 	.word _arm_irq_handler
@@ -443,6 +443,26 @@ _fiq_loop: /* for debug, because we loop here, so we know why */
 	11000 Memory access asynchronous parity error
 */
 
+_arm_prefetch_abort:
+	/*
+	 * Let's get at the reasons of the prefetch abort
+	 * IFSR: Instruction Fault Status Register
+	 * IFAR: Instruction Fault Address Register
+	 *
+	 */
+	mrc p15, 0, r0, c5, c0, 1 @ Read IFSR
+	mrc p15, 0, r1, c6, c0, 2 @ Read IFAR
+
+    /*
+     * Switch back to sys mode so that we have access
+     * to the C stack from the debugger.
+     */
+	msr cpsr_c,#(CPSR_SYS_MODE | CPSR_IRQ_FLAG | CPSR_FIQ_FLAG)
+
+	/* To help debugging, let's enter a forever loop */
+1:
+	b 1b
+
 _arm_data_abort:
 	/*
 	 * Let's get at the reasons of the data abort
@@ -462,7 +482,6 @@ _arm_data_abort:
 	/* To help debugging, let's enter a forever loop */
 1:
 	b 1b
-	.global _context_save
 
 _arm_irq_handler:
 
