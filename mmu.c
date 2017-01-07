@@ -134,7 +134,7 @@ void protect_kernel(uintptr_t ptp)
 {
 	struct permission perm = {0};
 	perm.cacheable = 1;
-	perm.ap = 0b11;
+	perm.ap = 0b01; //R/W privilege mode, no access unprivilege mode
 	perm.domain = 0;
 	//kernel
 #ifdef MMU_VERBOSE
