@@ -63,7 +63,6 @@ void create_user_process(void* entry)
 	lastPID ++;
 
 	uintptr_t ptp = new_user_ptp();
-	process->proc.ptp = ptp;
 	process->next = NULL;
 
 	for (i = 0; i < CONTEXT_SIZE; i ++)

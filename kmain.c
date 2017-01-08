@@ -342,7 +342,7 @@ void kmain() {
 	current_process = runing_processes.first;
 	runing_processes.first = NULL;
 	runing_processes.last = NULL;
-	set_TTBR0(current_process->proc.ptp);
+	set_TTBR0(current_process->proc.context[0]);
 	arm_enable_interrupts();
 	enable_mmu();
 	umain(0, current_process->proc.context[14]);

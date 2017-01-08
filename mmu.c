@@ -460,32 +460,6 @@ void set_pte(uintptr_t ptp, uintptr_t physical, uintptr_t virtual, uint32_t size
 	}
 }
 
-/*
-uintptr_t start_first_mmu()
-{
-	uintptr_t ptp = create_new_ptp();
-
-	struct permission perm = {0};
-	perm.cacheable = 1;
-	perm.ap = 0b10;  // read_only for user for the code
-	perm.domain = 0;
-
-	//user code
-	set_pte(ptp, (uint32_t)&_utext_start, (uint32_t)&_utext_start, (int)&_utext_end - (int)&_utext_start, perm);
-
-	perm.ap = 0b11;  // read/write for all
-	//user space
-	set_pte(ptp, (uint32_t)&_udata_start, (uint32_t)&_udata_start, (int)&_sys_stack_top - (int)&_udata_start, perm);
-
-	set_TTBR0(ptp);
-	set_TTBCR(0);
-	set_DACR(0b01);
-	enable_mmu();
-
-	return ptp;
-}
-*/
-
 void move_data(uintptr_t from, uintptr_t to, uint32_t size)
 {
 	int i;
