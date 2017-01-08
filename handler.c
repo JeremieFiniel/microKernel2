@@ -6,6 +6,7 @@
 
 static struct Bottom_event_list bottom_event_list;
 
+void kfflush();
 #define UART_BUFFER_SIZE 16
 
 struct UartBuffer{
@@ -71,6 +72,7 @@ void top_timer(uint32_t* sp)
 
 	schedul(sp);
 
+	kfflush();
 
 	//printfRoutine();
 	void (*bottom_func)(void) = pending_bottom_event();
