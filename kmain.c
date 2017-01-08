@@ -32,6 +32,7 @@
 #include "timer.h"
 #include "mmu.h"
 #include "scheduling.h"
+#include "printf.h"
 
 #define ECHO
 #define ECHO_ZZZ
@@ -277,6 +278,7 @@ void poll() {
 
 
 extern void umain(uint32_t userno, uint32_t sp);
+extern void kfflush();
 
 void /* __attribute__ ((interrupt ("SWI"))) */ swi_handler (uint32_t r0, uint32_t r1, uint32_t sp, uint32_t no) {
 	kprintf("SWI no=%d, r0=0x%x r1=0x%x sp=0x%x  \n",no,r0,r1,sp);
@@ -286,14 +288,18 @@ void /* __attribute__ ((interrupt ("SWI"))) */ swi_handler (uint32_t r0, uint32_
 		kprintf("Process %d exit with code %d\n", current_process->proc.pid, r0);
 		exit_current_process((uint32_t*)sp);
 	}
-	else if (no == 3) //sleep
-	{
-		_arm_sleep();
-	}
 	else if (no == 2) //create process
 	{
 		kprintf("Create user process\n");	
 		create_user_process((void*)r0);
+	}
+	else if (no == 3) //sleep
+	{
+		_arm_sleep();
+	}
+	else if (no == 4) //fflush
+	{
+		kfflush();
 	}
 }
 
@@ -321,6 +327,8 @@ void kmain() {
 #ifndef LOCAL_ECHO
 	uart_send_string(stdout,"\n\nCharacters will appear here...\n\r");
 #endif
+
+	init_printf();
 
 #ifdef CONFIG_POLLING
 	poll();
