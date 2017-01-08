@@ -507,8 +507,8 @@ _arm_irq_handler:
 	/* save register of spsr into irq stack */
 	stmdb sp!, {r0-r12, sp, lr}^
 
-	/* store the current ttrb */
-	mrc p15, 0, r0, c2, c0, 0 /*get ttrb*/
+	/* store the current ttbr */
+	mrc p15, 0, r0, c2, c0, 0 /*get ttbr*/
 	push {r0}
 	mov r0, sp
 

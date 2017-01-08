@@ -12,7 +12,6 @@ struct permission get_permission(struct section* section);
 void set_permission_to_page(struct permission permission, struct page_table* page);
 void set_permission_to_small(struct permission permission, struct small_page* page);
 void set_permission_to_section(struct permission permission, struct section* section);
-struct permission get_permission(struct section* section);
 
 extern uintptr_t _ptp_low;
 extern uintptr_t _ptp_high;

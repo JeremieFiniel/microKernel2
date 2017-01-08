@@ -44,7 +44,6 @@ void create_first_process()
 
 void create_user_process(void* entry)
 {
-	// WARNING, take care of concurrency here!!!
 	static uint32_t entry_ptr;
 	entry_ptr = (uint32_t) entry;
 	static int mmu_was_enable;
@@ -57,6 +56,9 @@ void create_user_process(void* entry)
 	struct process_link* process = kmalloc(sizeof(struct process_link));
 	assert(process != NULL, "ERROR, not enough space in kernel heap to allocate new process");
 
+	// WARNING, take care of concurrency here!!!
+	// For the moment it's ok, this function is call after a swi, so interrupt are disable
+	// But this must be change
 	process->proc.pid = lastPID;
 	lastPID ++;
 
