@@ -5,6 +5,11 @@ QEMU=/usr/bin/qemu-system-arm
 # Choose your toolchain for ARM 
 TOOLCHAIN=/opt/gcc-arm-none-eabi-4_8-2014q3/bin
 
+# Say yes ('y') to activate permission in domain access control register (DACR).
+# Say no ('n') to desable permission checker.
+# For the moment protecte mode doesn't work because of .got section for shared library.
+MMU_PROTECTION=n
+
 # Choose your emulated board
 BOARD_VERSATILEPB=n
 BOARD_VEXPRESS=y
@@ -97,6 +102,9 @@ ASFLAGS+= -mcpu=$(CPU) -c -x assembler-with-cpp -D$(CONFIG_BOARD)
 # Note that we give the specific cpu of the target board, so that GCC can generate the most adequate code.
 CFLAGS+= -c -mcpu=$(CPU) -D$(CONFIG_BOARD) -fpic -std=gnu99 -nostdlib -nostartfiles  -nodefaultlibs -fno-builtin
 
+ifeq ($(MMU_PROTECTION),y) 
+  CFLAGS += -DMMU_PROTECTION
+endif
 
 ifeq ($(CONFIG_LOCAL_ECHO),y)
   CFLAGS+= -DLOCAL_ECHO
@@ -116,6 +124,7 @@ endif
 ifeq ($(CONFIG_SPACE_STATS),y) 
   CFLAGS += -DCONFIG_SPACE_STATS
 endif
+
 
 all: dirs libaeabi/libaeabi.a $(OBJS)
 	$(LD) $(LDFLAGS) -T $(LDSCRIPT) -o $(BOARD).elf $(OBJS)

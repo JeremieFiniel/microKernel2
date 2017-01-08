@@ -113,7 +113,11 @@ void mmu_init()
 	free_sl_ptp = NULL;
 
 	set_TTBCR(0);
+#ifdef MMU_PROTECTION
 	set_DACR(0b01);
+#else
+	set_DACR(0b11);
+#endif
 }
 
 uintptr_t create_new_ptp()
