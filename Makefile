@@ -38,7 +38,7 @@ CONFIG_DEBUG=y
 ####################################################################
 
 # Add the platform-independent code, which is your kernel.
-OBJS = build/kmain.o build/kprintf.o build/kmem.o build/handler.o build/timer.o build/mmu.o build/scheduling.o
+OBJS = build/kmain.o build/kmem.o build/handler.o build/timer.o build/mmu.o build/scheduling.o build/printf.o
 
 # Add the necessary support for arithmetic operations.
 # The function kprintf uses integer division and modulo.
@@ -161,8 +161,6 @@ build/pl190_s.o: pl190.s Makefile
 #
 # Platform-independent code
 #
-build/kprintf.o: kprintf.c Makefile
-	$(GCC) $(CFLAGS) kprintf.c -o build/kprintf.o
 
 build/kmem.o: kmem.c Makefile
 	$(GCC) $(CFLAGS) kmem.c -o build/kmem.o
@@ -181,6 +179,9 @@ build/mmu.o: mmu.c Makefile
 
 build/scheduling.o: scheduling.c Makefile
 	$(GCC) $(CFLAGS) scheduling.c -o build/scheduling.o
+
+build/printf.o: printf.c Makefile
+	$(GCC) $(CFLAGS) printf.c -o build/printf.o
 
 #
 # User code
