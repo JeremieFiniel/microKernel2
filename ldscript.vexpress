@@ -20,22 +20,26 @@ SECTIONS
  .utext : {
     _utext_start = .;    
 	build/user.o(.text)
+	build/printf.o(.text)
     _utext_end = .;    
  }
  . = ALIGN(0x1000); /*Align to use different small pages*/
  .udata : {
     _udata_start = .;    
 	build/user.o(.data)
+	build/printf.o(.data)
     _udata_end = .;    
  }
  .ubss : {
     _ubss_start = .;    
 	build/user.o(.bss)
+	build/printf.o(.bss)
     _ubss_end = .;    
  }
  .urodata : {
     _urodata_start = .;    
 	build/user.o(.rodata)
+	build/printf.o(.rodata)
     _urodata_end = .;    
  }
  /* 
