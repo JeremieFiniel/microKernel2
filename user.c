@@ -8,9 +8,10 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "printf.h"
 
 static int errcode = 0;
-void kprintf(const char *fmt, ...);
+//void kprintf(const char *fmt, ...);
 void _arm_usr_mode(uint32_t userno, void* entry, uint32_t sp);
 void _arm_halt(void);
 
@@ -32,22 +33,22 @@ void create_user_process_syscall(void* entry) {
 
 void prog1(uint32_t pid) {
 
-	kprintf("USER[%d]: prog1!\n",pid);
+	printf("USER[%d]: prog1!\n",pid);
 
 	int i;
 	for (i = 0; i < 15; i ++)
-		kprintf("1Hello world!\n");
+		printf("1Hello world!\n");
 
 	exit(0);
 }
 
 void prog2(uint32_t pid) {
 
-	kprintf("USER[%d]: prog2!\n",pid);
+	printf("USER[%d]: prog2!\n",pid);
 
 	int i;
 	for (i = 0; i < 15; i ++)
-		kprintf("2Hi you\n");
+		printf("2Hi you\n");
 
 	exit(0);
 }
@@ -57,7 +58,7 @@ void prog2(uint32_t pid) {
  * in gic.s -> see _arm_usr_mode
  */
 void main(uint32_t pid) {
-	kprintf("USER[%d]: Hello!\n",pid);
+	printf("USER[%d]: Hello!\n",pid);
 	/*
 	 * Attempt to change to SYS mode, by changing the CPSR
 	 * That can only be done in privileged mode.
@@ -74,10 +75,10 @@ void main(uint32_t pid) {
 			:
 			: "memory");
 	if (old!=niu) {
-		kprintf("USR mode succeeded to change to SYS mode");
-		kprintf(" cpsr=0x%x -> cpsr=0x%x \n",old,niu);
+		printf("USR mode succeeded to change to SYS mode");
+		printf(" cpsr=0x%x -> cpsr=0x%x \n",old,niu);
 	} else
-		kprintf(" -- in USR mode!\n");
+		printf(" -- in USR mode!\n");
 
 	create_user_process_syscall(prog1);
 	create_user_process_syscall(prog2);
@@ -96,7 +97,7 @@ void main(uint32_t pid) {
 }
 
 void umain(uint32_t pid, uint32_t sp) {
-	kprintf("--> launching user pid=%d...\n",pid);
+	printf("--> launching user pid=%d...\n",pid);
 	//_arm_usr_mode(pid, main, sp);
 	/* Switch from SYS_MODE to USR_MODE */
 	__asm__ __volatile__(
@@ -109,5 +110,5 @@ void umain(uint32_t pid, uint32_t sp) {
 			"mov pc, %1\n"
 			::"r" (sp), "r" (main): "memory"
 			);
-	kprintf("--> user pid=%d exited, errcode=%d \n",pid, errcode);
+	printf("--> user pid=%d exited, errcode=%d \n",pid, errcode);
 }
