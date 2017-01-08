@@ -23,7 +23,6 @@
 
 struct process{
 	unsigned int pid; //process id
-	uintptr_t ptp; //page table page
 	uint32_t context[CONTEXT_SIZE]; //registers TODO
 };
 
