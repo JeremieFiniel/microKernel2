@@ -31,6 +31,11 @@ void create_user_process_syscall(void* entry) {
 	__asm volatile ("swi #0x02" :::);
 }
 
+void yield() {
+	__asm volatile ("swi #0x05" ::: );
+}
+
+
 void prog1(uint32_t pid) {
 
 	printf("USER[%d]: prog1!\n",pid);

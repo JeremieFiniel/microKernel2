@@ -281,7 +281,7 @@ extern void umain(uint32_t userno, uint32_t sp);
 extern void kfflush();
 
 void /* __attribute__ ((interrupt ("SWI"))) */ swi_handler (uint32_t r0, uint32_t r1, uint32_t sp, uint32_t no) {
-	kprintf("SWI no=%d, r0=0x%x r1=0x%x sp=0x%x  \n",no,r0,r1,sp);
+	//kprintf("SWI no=%d, r0=0x%x r1=0x%x sp=0x%x  \n",no,r0,r1,sp);
 
 	if (no == 0) //exit
 	{
@@ -300,6 +300,10 @@ void /* __attribute__ ((interrupt ("SWI"))) */ swi_handler (uint32_t r0, uint32_
 	else if (no == 4) //fflush
 	{
 		kfflush();
+	}
+	else if (no == 5) //yield
+	{
+		schedul(sp);
 	}
 }
 
