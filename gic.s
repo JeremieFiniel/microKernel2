@@ -376,6 +376,10 @@ _swi_handler:
 	// Invalidate entire data TLB
 	mcr p15, 0, r0, c8, c6, 0
 
+	// set new spsr
+	ldr r0, [sp, #64]
+	msr spsr, r0
+
 	// store register context on the spsr mode
 	ldmia sp!, {r0-r12, sp, lr}^
 
@@ -570,6 +574,10 @@ _arm_irq_handler:
 	mcr p15, 0, r0, c8, c5, 0
 	// Invalidate entire data TLB
 	mcr p15, 0, r0, c8, c6, 0
+
+	// set new spsr
+	ldr r0, [sp, #64]
+	msr spsr, r0
 
 	// store register context on the spsr mode
 	ldmia sp!, {r0-r12, sp, lr}^
